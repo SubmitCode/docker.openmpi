@@ -17,6 +17,7 @@ RUN apt-get update -y && \
     apt-get install -y --no-install-recommends openssh-server \
         python-dev python-numpy python-pip python-virtualenv python-scipy \
         gcc gfortran libopenmpi-dev openmpi-bin openmpi-common openmpi-doc binutils && \
+    apt-get install -y build-essential vim git cmake && \
     apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir /var/run/sshd
@@ -47,7 +48,7 @@ RUN mkdir -p ${SSHDIR}
 ADD ssh/config ${SSHDIR}/config
 ADD ssh/id_rsa.mpi ${SSHDIR}/id_rsa
 ADD ssh/id_rsa.mpi.pub ${SSHDIR}/id_rsa.pub
-ADD ssh/id_rsa.mpi.pub ${SSHDIR}/authorized_keys
+ADD ssh/id_rsa.pub ${SSHDIR}/authorized_keys
 
 RUN chmod -R 600 ${SSHDIR}* && \
     chown -R ${USER}:${USER} ${SSHDIR}
@@ -76,6 +77,13 @@ ENV TRIGGER 1
 
 ADD mpi4py_benchmarks ${HOME}/mpi4py_benchmarks
 RUN chown -R ${USER}:${USER} ${HOME}/mpi4py_benchmarks
+
+RUN git clone --recursive https://github.com/microsoft/LightGBM && \
+        mkdir LightGBM/build && \
+        cd LightGBM/build && \
+        cmake -DUSE_MPI=ON .. && \
+        make -j4 && \
+        make install
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]

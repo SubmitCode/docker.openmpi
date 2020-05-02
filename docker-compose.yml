@@ -10,7 +10,6 @@ mpi_node:
     build: .
     # image: openmpi
 
-
 # version: "2"
 
 # services:
